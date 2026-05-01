@@ -1,117 +1,97 @@
 services:
-    postgres:
-        image: postgres:15.6-alpine
-        container_name: postgres-container
-        restart: unless-stopped
-        env_file: .env
-        environment:
-            POSTGRES_PASSWORD: ${SERVICE_DB_PASS}
-            POSTGRES_DB: test_db
-        volumes:
-            - postgres_volume:/var/lib/postgresql/data
-        ports:
-            - '5432:5432'
-        # deploy:
-        #     resources:
-        #         limits:
-        #             memory: 1g
-        #             cpus: '1.0'
-        healthcheck:
-            test: ['CMD-SHELL', 'pg_isready -U postgres']
-            timeout: 20s
-            retries: 5
-            interval: 10s
-            start_period: 30s
-        networks:
-            - network
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres16
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_PASSWORD: ${SERVICE_DB_PASS}
+      POSTGRES_DB: test_db
+    volumes:
+      - postgres_volume:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d test_db']
+      timeout: 20s
+      retries: 5
+      interval: 10s
+      start_period: 30s
+    networks:
+      - network
 
-    mysql:
-        image: mysql:8.0
-        container_name: mysql-container
-        restart: unless-stopped
-        env_file: .env
-        environment:
-            MYSQL_ROOT_PASSWORD: ${SERVICE_DB_PASS}
-        volumes:
-            - mysql_volume:/var/lib/mysql
-        ports:
-            - '3306:3306'
-        # deploy:
-        #     resources:
-        #         limits:
-        #             memory: 1g
-        #             cpus: '1.0'
-        healthcheck:
-            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-prootpass']
-            timeout: 20s
-            retries: 5
-            interval: 10s
-            start_period: 30s
-        networks:
-            - network
+  mysql:
+    image: mysql:8.4 
+    container_name: mysql8.4
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SERVICE_DB_PASS}
+    volumes:
+      - mysql_volume:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p${SERVICE_DB_PASS}']
+      timeout: 20s
+      retries: 5
+      interval: 10s
+      start_period: 30s
+    networks:
+      - network
 
-    redis:
-        image: redis:7-alpine
-        container_name: redis-container
-        restart: unless-stopped
-        env_file: .env
-        command: redis-server --save 60 1 --loglevel warning --maxmemory 374m --maxmemory-policy allkeys-lru
-        volumes:
-            - redis_volume:/data
-        ports:
-            - '6379:6379'
-        # deploy:
-        #     resources:
-        #         limits:
-        #             memory: 512m
-        #             cpus: '0.5'
-        healthcheck:
-            test: ['CMD', 'redis-cli', 'ping']
-            timeout: 20s
-            retries: 5
-            interval: 10s
-            start_period: 10s
-        networks:
-            - network
+  redis:
+    image: redis:7-alpine
+    container_name: redis7
+    restart: unless-stopped
+    env_file: .env
+    command: redis-server --save 60 1 --loglevel warning --maxmemory 374m --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_volume:/data
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      timeout: 20s
+      retries: 5
+      interval: 10s
+      start_period: 10s
+    networks:
+      - network
 
-    mongodb:
-        image: mongo:4.4
-        container_name: mongodb-container
-        restart: unless-stopped
-        env_file: .env
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${SERVICE_DB_USER}
-            MONGO_INITDB_ROOT_PASSWORD: ${SERVICE_DB_PASS}
-        volumes:
-            - mongodb_volume:/data/db
-            - mongodb_volume:/data/configdb
-        ports:
-            - '27017:27017'
-        # deploy:
-        #     resources:
-        #         limits:
-        #             memory: 1g
-        #             cpus: '1.0'
-        healthcheck:
-            test: ['CMD', 'mongo', '--eval', 'db.adminCommand("ping")']
-            timeout: 20s
-            retries: 5
-            interval: 10s
-            start_period: 40s
-        networks:
-            - network
+  mongodb:
+    image: mongo:4.4
+    container_name: mongo4.4
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${SERVICE_DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${SERVICE_DB_PASS}
+    volumes:
+      - mongodb_volume:/data/db
+      - mongodb_volume:/data/configdb
+    ports:
+      - '27017:27017'
+    healthcheck:
+      test: ['CMD', 'mongo', '--eval', 'db.adminCommand("ping")']
+      timeout: 20s
+      retries: 5
+      interval: 10s
+      start_period: 40s
+    networks:
+      - network
 
 volumes:
-    postgres_volume:
-        driver: local
-    mysql_volume:
-        driver: local
-    redis_volume:
-        driver: local
-    mongodb_volume:
-        driver: local
+  postgres_volume:
+    driver: local
+  mysql_volume:
+    driver: local
+  redis_volume:
+    driver: local
+  mongodb_volume:
+    driver: local
 
 networks:
-    network:
-        name: docker_network
-        driver: bridge
+  network:
+    name: docker_network
+    driver: bridge
