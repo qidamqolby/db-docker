@@ -14,7 +14,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d test_db"]
       timeout: 20s
@@ -71,7 +71,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 20s
