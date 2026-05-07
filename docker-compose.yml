@@ -10,9 +10,13 @@ services:
     volumes:
       - postgres_volume:/var/lib/postgresql/data
     ports:
-      - '5432:5432'
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres -d test_db']
+      test: ["CMD-SHELL", "pg_isready -U postgres -d test_db"]
       timeout: 20s
       retries: 5
       interval: 10s
@@ -21,7 +25,7 @@ services:
       - network
 
   mysql:
-    image: mysql:8.4 
+    image: mysql:8.4
     container_name: mysql8.4
     restart: unless-stopped
     env_file: .env
@@ -30,9 +34,23 @@ services:
     volumes:
       - mysql_volume:/var/lib/mysql
     ports:
-      - '3306:3306'
+      - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p${SERVICE_DB_PASS}']
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${SERVICE_DB_PASS}",
+        ]
       timeout: 20s
       retries: 5
       interval: 10s
@@ -49,9 +67,13 @@ services:
     volumes:
       - redis_volume:/data
     ports:
-      - '6379:6379'
+      - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
+      test: ["CMD", "redis-cli", "ping"]
       timeout: 20s
       retries: 5
       interval: 10s
@@ -71,9 +93,14 @@ services:
       - mongodb_volume:/data/db
       - mongodb_volume:/data/configdb
     ports:
-      - '27017:27017'
+      - "27017:27017"
+    command: mongod --wiredTigerCacheSizeGB 0.5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     healthcheck:
-      test: ['CMD', 'mongo', '--eval', 'db.adminCommand("ping")']
+      test: ["CMD", "mongo", "--eval", 'db.adminCommand("ping")']
       timeout: 20s
       retries: 5
       interval: 10s
