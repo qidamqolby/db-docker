@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
+      POSTGRES_INITDB_ARGS: "--shared_buffers=128MB --max_connections=50"
       POSTGRES_PASSWORD: ${SERVICE_DB_PASS}
       POSTGRES_DB: test_db
     volumes:
@@ -14,6 +15,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "1"
           memory: 512M
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d test_db"]
@@ -24,39 +26,40 @@ services:
     networks:
       - network
 
-  mysql:
-    image: mysql:8.4
-    container_name: mysql8.4
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${SERVICE_DB_PASS}
-    volumes:
-      - mysql_volume:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "mysqladmin",
-          "ping",
-          "-h",
-          "localhost",
-          "-u",
-          "root",
-          "-p${SERVICE_DB_PASS}",
-        ]
-      timeout: 20s
-      retries: 5
-      interval: 10s
-      start_period: 30s
-    networks:
-      - network
+  # mysql:
+  #   image: mysql:8.4
+  #   container_name: mysql8.4
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${SERVICE_DB_PASS}
+  #   volumes:
+  #     - mysql_volume:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "1"
+  #         memory: 1G
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD",
+  #         "mysqladmin",
+  #         "ping",
+  #         "-h",
+  #         "localhost",
+  #         "-u",
+  #         "root",
+  #         "-p${SERVICE_DB_PASS}",
+  #       ]
+  #     timeout: 20s
+  #     retries: 5
+  #     interval: 10s
+  #     start_period: 30s
+  #   networks:
+  #     - network
 
   redis:
     image: redis:7-alpine
@@ -71,6 +74,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "1"
           memory: 512M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -98,6 +102,7 @@ services:
     deploy:
       resources:
         limits:
+          cpus: "1"
           memory: 1G
     healthcheck:
       test: ["CMD", "mongo", "--eval", 'db.adminCommand("ping")']
